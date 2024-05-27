@@ -15,4 +15,7 @@ An app made using Tkinter and OpenCV to edit images.
 2. pillow
 3. cv2
 4. numpy
+
+#### Screenshot:
+
 ![Screenshot (2)](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/d3b71d23-497a-407c-8d1e-9d3529af149c)
