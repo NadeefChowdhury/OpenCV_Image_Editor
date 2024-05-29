@@ -2,7 +2,7 @@
 An app made using Tkinter and OpenCV to edit images.
 
 ### Functions
-1. Converting colorful images to grascale images
+1. Converting colorful images to grayscale images
 2. Blurring images
 3. Revealing the contours/edges of images
 4. Increasing or decresing the brightness
