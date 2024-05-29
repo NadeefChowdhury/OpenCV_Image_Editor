@@ -6,6 +6,7 @@ An app made using Tkinter and OpenCV to edit images.
 2. Blurring images
 3. Revealing the contours/edges of images
 4. Increasing or decresing the brightness
+5. Exporting the edited image as a .png file
 ### Limitations
 1. You cannot convert an image to grayscale/blur after converting it to contour
 2. You cannot blur, grayscale or reveal the contours if you increase or decrease the brightness
