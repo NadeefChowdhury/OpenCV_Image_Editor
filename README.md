@@ -9,7 +9,7 @@ An app made using Tkinter and OpenCV to edit images.
 5. Exporting the edited image as a .png file
 ### Limitations
 1. You cannot convert an image to grayscale/blur after converting it to contour
-2. You cannot blur, grayscale or reveal the contours if you increase or decrease the brightness
+2. You cannot blur, grayscale or reveal the contours after changing the brightness. So, change the brightness at the end.
 #### Required Libraries
 1. tkinter
 2. pillow
