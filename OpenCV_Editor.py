@@ -52,7 +52,7 @@ def open_():
         
         horizontal = Scale(root, label='Brightness',from_=-100, to=100, length=200,bg='blue',fg='white', orient=HORIZONTAL, command=slide)
         horizontal.grid(row=6, column=0, columnspan=2)  
-        export_image = Button(root, text="Exoprt as PNG", command=export,width=20, height=1, bg='blue', fg='white').grid(row=7, column=0,columnspan=2, padx=((screen_width/2)-70), pady=5)
+        export_image = Button(root, text="Export as PNG", command=export,width=20, height=1, bg='blue', fg='white').grid(row=7, column=0,columnspan=2, padx=((screen_width/2)-70), pady=5)
     else:
         if (name != ''):
             file = name
@@ -69,7 +69,7 @@ def open_():
             
             horizontal = Scale(root, label='Brightness',from_=-100, to=100, length=200,bg='blue',fg='white', orient=HORIZONTAL, command=slide)
             horizontal.grid(row=6, column=0, columnspan=2)  
-            export_image = Button(root, text="Exoprt as PNG", command=export,width=20, height=1, bg='blue', fg='white').grid(row=7, column=0,columnspan=2, padx=((screen_width/2)-70), pady=5)
+            export_image = Button(root, text="Export as PNG", command=export,width=20, height=1, bg='blue', fg='white').grid(row=7, column=0,columnspan=2, padx=((screen_width/2)-70), pady=5)
         else:
             Label(root, text="CHOOSE AN IMAGE").grid(row=3, column=0, columnspan=2)    
             
