@@ -16,6 +16,6 @@ An app made using Tkinter and OpenCV to edit images.
 5. os
 #### Screenshot:
 
+![snip1](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/fb0536e9-7759-4c4f-ab7e-e4eb94cb67c6)
 
-![snippet1](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/20109d5a-37ff-42ca-8299-3b607598fb5c)
-![snippet2](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/d81870ee-ea49-4ec9-99ba-629aa1592462)
+![snip2](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/fe81df38-62cb-4a3f-bc66-4948fd81eb56)
