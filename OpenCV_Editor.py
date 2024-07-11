@@ -257,6 +257,7 @@ def edges():
     new_window = Toplevel()
     new_window.title("Contours")
     new_window.geometry("600x600")
+    new_window.resizable(0,0)
     def reveal_contours(e):
         global img
         global canvas2
