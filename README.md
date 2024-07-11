@@ -7,9 +7,7 @@ An app made using Tkinter and OpenCV to edit images.
 3. Revealing the contours/edges of images
 4. Increasing or decresing the brightness
 5. Exporting the edited image as a .png file
-### Limitations
-1. You cannot convert an image to grayscale/blur after converting it to contour
-2. You cannot blur, grayscale or reveal the contours after changing the brightness. So, change the brightness at the end.
+
 #### Required Libraries
 1. tkinter
 2. pillow
@@ -18,4 +16,6 @@ An app made using Tkinter and OpenCV to edit images.
 5. os
 #### Screenshot:
 
-![Screenshot (4)](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/bb776c35-2c3d-491b-a30e-51d2a5595193)
+
+![snippet1](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/20109d5a-37ff-42ca-8299-3b607598fb5c)
+![snippet2](https://github.com/NadeefChowdhury/OpenCV_Image_Editor/assets/121111949/d81870ee-ea49-4ec9-99ba-629aa1592462)
