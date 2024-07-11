@@ -286,7 +286,7 @@ def edges():
         canvas2.grid_forget()
         
         canvas2= Canvas(new_window, width= width, height= height)
-        canvas2.grid(row=0, column=0, padx=200)
+        canvas2.grid(row=0, column=0, padx=150,pady=10)
         resized_image2= pil_img.resize((width,height), Image.NEAREST)
         new_img2 = ImageTk.PhotoImage(resized_image2)
         canvas2.create_image(0,0, anchor=NW, image=new_img2)
@@ -316,13 +316,13 @@ def edges():
         canvas2.grid_forget()
         
         canvas2= Canvas(new_window, width= width, height= height)
-        canvas2.grid(row=0, column=0, padx=200)
+        canvas2.grid(row=0, column=0, padx=150,pady=10)
         resized_image2= pil_img.resize((width,height), Image.NEAREST)
         new_img2 = ImageTk.PhotoImage(resized_image2)
         canvas2.create_image(0,0, anchor=NW, image=new_img2)
         inverted = not inverted
     canvas2= Canvas(new_window, width= width, height= height)
-    canvas2.grid(row=0, column=0, padx=200)
+    canvas2.grid(row=0, column=0, padx=150,pady=10)
     resized_image2= img.resize((width,height), Image.NEAREST)
     new_img2 = ImageTk.PhotoImage(resized_image)
     canvas2.create_image(0,0, anchor=NW, image=new_img)
