@@ -1,29 +1,30 @@
 from tkinter import *
-from PIL import ImageTk, Image, ImageGrab
-from tkinter import filedialog
+from tkinter import messagebox 
 import cv2 as cv
+from PIL import ImageTk, Image, ImageGrab, ImageOps, ImageFilter, ImageEnhance
+from tkinter import filedialog
 import numpy as np
 import os
-
-
 root = Tk()
-screen_width = 1366
-screen_height = 768
-root.geometry(str(screen_width)+"x"+str(int(screen_height)))
+root.geometry("800x600")
 root.resizable(0,0)
-root.title("Editor")
-
-global isblur
-isblur = 0
-global isgray
-isgray=0
-
+root.title("Image Editor")
 global name
+
 name = ''
-
-
+global settings 
+settings = {
+    'gray':False,
+    'blur':0,
+    'contours':0,
+    'brightness':1,
+}
+global width
+global height
+    
 def open_():
     global img
+    global backup_img
     global canvas
     global resized_image
     global new_img
@@ -35,379 +36,314 @@ def open_():
     global horizontal
     global export_image
     global name
+    global width
+    global height
     root.filename = filedialog.askopenfilename(initialdir="Images", title="Select a file", filetypes=(("all files", "*.*"),("png files", ".png"),("jpg files", ".jpg")))
     file = root.filename
+    
     if file:
         name = file
-        gray_button = Button(root, text="Grayscale", command=convert_gray,width=20, bg='blue', fg='white').grid(row=3, column=0,pady=5)
-        normal_button = Button(root, text="Normal", command=convert_normal,width=20, bg='blue', fg='white').grid(row=3, column=1,pady=5)
-        blur_button = Button(root, text="Blur", command=convert_blur,width=20, bg='blue', fg='white').grid(row=4, column=0,pady=5)
-        edge_button = Button(root, text="Edges/Contours", command=convert_edge,width=20, bg='blue', fg='white').grid(row=4, column=1,pady=5)
-        canvas= Canvas(root, width= 300, height= 300)
+       
+        gray_button = Button(root, text="Grayscale", command=convert_gray,width=20, bg='blue', fg='white')
+        gray_button.grid(row=3, column=0,pady=5)
+        normal_button = Button(root, text="Normal",width=20, bg='blue', fg='white', command=normal)
+        normal_button.grid(row=3, column=1,pady=5)
+        blur_button = Scale(root, label='Blur',from_=0, to=10, length=160,bg='blue',fg='white', orient=HORIZONTAL, command=blur)
+        blur_button.grid(row=4, column=0,pady=5)
+        edge_button = Button(root, text="Edges/Contours", width=20, bg='blue', fg='white', command=edges).grid(row=4, column=1,pady=5)
+        try:
+            img = Image.open(root.filename)
+            backup_img = Image.open(root.filename)
+        except:
+            messagebox.showinfo("showinfo", "Select Image File") 
+        
+        width, height = img.size
+        width = int(width*300/height)
+        height = 300
+        
+        canvas= Canvas(root, width=int(width), height= int(height))
         canvas.grid(row=5, column=0, columnspan=2)
-        img= Image.open(root.filename)
-        resized_image= img.resize((300,300), Image.LANCZOS)
+        
+        resized_image= img.resize((int(width),int(height)), Image.NEAREST)
         new_img = ImageTk.PhotoImage(resized_image)
         canvas.create_image(0,0, anchor=NW, image=new_img)
         
-        horizontal = Scale(root, label='Brightness',from_=-100, to=100, length=200,bg='blue',fg='white', orient=HORIZONTAL, command=slide)
+        horizontal = Scale(root, label='Brightness',from_=-100, to=100, length=200,bg='blue',fg='white', orient=HORIZONTAL, command=brightness)
         horizontal.grid(row=6, column=0, columnspan=2)  
-        export_image = Button(root, text="Export as PNG", command=export,width=20, height=1, bg='blue', fg='white').grid(row=7, column=0,columnspan=2, padx=((screen_width/2)-70), pady=5)
+        export_image = Button(root, text="Export as PNG",width=20, height=1, bg='blue', fg='white', command=export).grid(row=7, column=0,columnspan=2, padx=300, pady=5)
     else:
         if (name != ''):
             file = name
-            gray_button = Button(root, text="Grayscale", command=convert_gray,width=20, bg='blue', fg='white').grid(row=3, column=0,pady=5)
-            normal_button = Button(root, text="Normal", command=convert_normal,width=20, bg='blue', fg='white').grid(row=3, column=1,pady=5)
-            blur_button = Button(root, text="Blur", command=convert_blur,width=20, bg='blue', fg='white').grid(row=4, column=0,pady=5)
-            edge_button = Button(root, text="Edges/Contours", command=convert_edge,width=20, bg='blue', fg='white').grid(row=4, column=1,pady=5)
-            canvas= Canvas(root, width= 300, height= 300)
+            
+            gray_button = Button(root, text="Grayscale",command=convert_gray,width=20, bg='blue', fg='white')
+            gray_button.grid(row=3, column=0,pady=5)
+            normal_button = Button(root, text="Normal",width=20, bg='blue', fg='white', command=normal)
+            normal_button.grid(row=3, column=1,pady=5)
+            blur_button = Scale(root, label='Blur',from_=0, to=10, length=160,bg='blue',fg='white', orient=HORIZONTAL,  command=blur)
+            blur_button.grid(row=4, column=0,pady=5)
+            edge_button = Button(root, text="Edges/Contours",width=20, bg='blue', fg='white', command=edges).grid(row=4, column=1,pady=5)
+            try:
+                img = Image.open(name)
+                backup_img = Image.open(name)
+            except:
+                messagebox.showinfo("showinfo", "Select Image File") 
+            
+            width, height = img.size
+            width = int(width*300/height)
+            height = 300
+            canvas= Canvas(root, width= int(width), height= int(height))
             canvas.grid(row=5, column=0, columnspan=2)
-            img= Image.open(name)
-            resized_image= img.resize((300,300), Image.LANCZOS)
+            
+            resized_image= img.resize((int(width),int(height)), Image.NEAREST)
             new_img = ImageTk.PhotoImage(resized_image)
             canvas.create_image(0,0, anchor=NW, image=new_img)
             
-            horizontal = Scale(root, label='Brightness',from_=-100, to=100, length=200,bg='blue',fg='white', orient=HORIZONTAL, command=slide)
+            horizontal = Scale(root, label='Brightness',from_=-100, to=100, length=200,bg='blue',fg='white', orient=HORIZONTAL,command=brightness)
             horizontal.grid(row=6, column=0, columnspan=2)  
-            export_image = Button(root, text="Export as PNG", command=export,width=20, height=1, bg='blue', fg='white').grid(row=7, column=0,columnspan=2, padx=((screen_width/2)-70), pady=5)
+            export_image = Button(root, text="Export as PNG",width=20, height=1, bg='blue', fg='white', command=export).grid(row=7, column=0,columnspan=2, padx=300, pady=5)
         else:
             Label(root, text="CHOOSE AN IMAGE").grid(row=3, column=0, columnspan=2)    
-            
-caution1 = Label(root, text='CAUTION: You cannot change the grayscale/blur attribute of a contoured image.', font=('Arial', 15)).grid(row=0, column=0, columnspan=2, pady=(20,0))
-caution2 = Label(root, text='You can change brightness of a grayscale/blur image but not of a contoured image and you cannot change anything after changing the brightness. So change the brightness at the end.', font=('Arial', 12)).grid(row=1, column=0, columnspan=2, pady=(10,5))
-open_image = Button(root, text="Open Image", command=open_, width=20, height=3, bg='blue', fg='white').grid(row=2, column=0,columnspan=2, padx=((screen_width/2)-70), pady=30)
-def export():
-    filename = filedialog.asksaveasfilename(title = "Create Image")
-    if filename:
-        if os.path.exists(filename):
-            print("Name already exists!")
-        else:
-                x1 = root.winfo_rootx() + canvas.winfo_x()
-                y1 = root.winfo_rooty() + canvas.winfo_y()
-                x2 = x1 + canvas.winfo_width()
-                y2 = y1 + canvas.winfo_height()
-                # Extract image
-                image = ImageGrab.grab().crop((x1, y1, x2, y2))
-                # And save it
-                image.save(filename+'.png')
-                print(f"Saved image")
-    else:
-        print("Cancel")
-
+open_image = Button(root, text="Open Image", command=open_, width=13, height=2, bg='blue', fg='white', font=('Arial', 12)).grid(row=0, column=0,columnspan=2, padx=300, pady=10)
 
 def convert_gray():
+    global gray_button
+    global settings
     global img
-    global file     
     global canvas
-    global resized_image
     global new_img
-    global blur_button
-    global edge_button
-    global isgray
-    global isblur
-    global blur
-    global blur_pil
-    
-    
-    if isgray==0:
-        if isblur == 0:
-            img = cv.imread(file)
-            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            gray_pil = Image.fromarray(gray)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= gray_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-            
-           
-        else:
+    global resized_image
+    if settings['gray'] == False:
+        gray_button.configure(bg='red') 
+        settings.update({'gray':True})
+        img = ImageOps.grayscale(img) 
         
-            img = cv.imread(file)
-            rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-            gray = cv.cvtColor(blur, cv.COLOR_BGR2GRAY)
-            gray_pil = Image.fromarray(gray)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= gray_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-        gray_button = Button(root, text="Grayscale", command=convert_gray,width=20, bg='black', fg='white').grid(row=3, column=0,pady=5)
-    else:
-        if isblur==0:
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            img= Image.open(file)
-            resized_image= img.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
             
-    
-        else:
-            img = cv.imread(file)
-            rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-            blur_pil = Image.fromarray(blur)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= blur_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-        gray_button = Button(root, text="Grayscale", command=convert_gray,width=20, bg='blue', fg='white').grid(row=3, column=0,pady=5)
-    
-    isgray=abs(isgray-1)
-    
-def convert_normal():
-
-    global img
-    global file
-    global canvas
-    global resized_image
-    global new_img
-    global blur_button
-    global edge_button
-    global isblur
-    global isgray
-    
-    isgray=0
-    isblur=0
+    else:
+        gray_button.configure(bg='blue')    
+        settings.update({'gray':False})
+        img = backup_img
+        img = img.filter(ImageFilter.BoxBlur(blur_button.get()))
+        brightened = ImageEnhance.Brightness(img)
+        img = brightened.enhance(settings['brightness'])
+    img = img.filter(ImageFilter.BoxBlur(blur_button.get()))
+    brightened = ImageEnhance.Brightness(img)
+    img = brightened.enhance(settings['brightness'])
+    width, height = img.size
+    width = int(width*300/height)
+    height = 300
     canvas.grid_forget()
-    canvas= Canvas(root, width= 300, height= 300)
+    canvas= Canvas(root, width= width, height= height)
     canvas.grid(row=5, column=0, columnspan=2)
-    img= Image.open(file)
-    resized_image= img.resize((300,300), Image.LANCZOS)
+    resized_image= img.resize((width,height), Image.NEAREST)
     new_img = ImageTk.PhotoImage(resized_image)
     canvas.create_image(0,0, anchor=NW, image=new_img)
-    gray_button = Button(root, text="Grayscale", command=convert_gray,width=20, bg='blue', fg='white').grid(row=3, column=0,pady=5)
-    blur_button = Button(root, text="Blur", command=convert_blur,width=20, bg='blue', fg='white').grid(row=4, column=0,pady=5)
-    edge_button = Button(root, text="Edges/Contours", command=convert_edge,width=20, bg='blue', fg='white').grid(row=4, column=1,pady=5)
-    horizontal.set(0)
-def convert_blur():
-    global img
-    global file
-    global canvas
-    global resized_image
-    global new_img
-    global gray_button
-    global blur
-    global blur_pil
-    global isblur
-    global isgray
-    
-    if isblur==0:
-        if isgray==0:
-            img = cv.imread(file)
-            rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-            blur_pil = Image.fromarray(blur)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= blur_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)  
-        else:
-            img = cv.imread(file)
-            rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-            gray = cv.cvtColor(blur, cv.COLOR_BGR2GRAY)
-            gray_pil = Image.fromarray(gray)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= gray_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-        blur_button = Button(root, text="Blur", command=convert_blur,width=20, bg='black', fg='white').grid(row=4, column=0,pady=5)
-    else:
-         if isgray==0:
-             canvas.grid_forget()
-             canvas= Canvas(root, width= 300, height= 300)
-             canvas.grid(row=5, column=0, columnspan=2)
-             img= Image.open(file)
-             resized_image= img.resize((300,300), Image.LANCZOS)
-             new_img = ImageTk.PhotoImage(resized_image)
-             canvas.create_image(0,0, anchor=NW, image=new_img)
-             
-    
-         if isgray==1:
-             img = cv.imread(file)
-             gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-             gray_pil = Image.fromarray(gray)
-             canvas.grid_forget()
-             canvas= Canvas(root, width= 300, height= 300)
-             canvas.grid(row=5, column=0, columnspan=2)
-             resized_image= gray_pil.resize((300,300), Image.LANCZOS)
-             new_img = ImageTk.PhotoImage(resized_image)
-             canvas.create_image(0,0, anchor=NW, image=new_img)
-         blur_button = Button(root, text="Blur", command=convert_blur,width=20, bg='blue', fg='white').grid(row=4, column=0,pady=5)
-    isblur = abs(isblur-1)
-
-    
-def convert_edge():
-    global img
-    global file
-    global canvas
-    global resized_image
-    global new_img
-    global blur
-    global blur_pil
-    global gray
-    global gray_pil
-    global gray_button
+def blur(e):
     global blur_button
-    global isblur
-    global isgray
-    if isblur == 0:
-        if isgray==0:
-            img = cv.imread(file)
-            rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            canny = cv.Canny(rgb, 125, 175,)
-            canny_pil = Image.fromarray(canny)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= canny_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-        else:
-            img = cv.imread(file)
-            gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-            canny = cv.Canny(gray, 125, 175,)
-            canny_pil = Image.fromarray(canny)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= canny_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-        
-    if isblur==1:
-        if isgray==0:
-            img = cv.imread(file)
-            rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-            canny = cv.Canny(blur, 125, 175,)
-            canny_pil = Image.fromarray(canny)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= canny_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-        else:
-            img = cv.imread(file)
-            rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-            blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-            gray = cv.cvtColor(blur, cv.COLOR_BGR2GRAY)
-            canny = cv.Canny(gray, 125, 175,)
-            canny_pil = Image.fromarray(canny)
-            canvas.grid_forget()
-            canvas= Canvas(root, width= 300, height= 300)
-            canvas.grid(row=5, column=0, columnspan=2)
-            resized_image= canny_pil.resize((300,300), Image.LANCZOS)
-            new_img = ImageTk.PhotoImage(resized_image)
-            canvas.create_image(0,0, anchor=NW, image=new_img)
-            
-        
-    
-    gray_button = Button(root, text="Grayscale", command=convert_gray, state=DISABLED,width=20, bg='blue', fg='white').grid(row=3, column=0,pady=5)
-    blur_button = Button(root, text="Blur", command=convert_blur, state=DISABLED,width=20, bg='blue', fg='white').grid(row=4, column=0,pady=5)
-    
-def slide(e):
+    global settings
     global img
-    global file
     global canvas
-    global resized_image
     global new_img
-    global blur
-    global blur_pil
-    global gray
-    global gray_pil
-    global gray_button
-    global blur_button
-    global edge_button
-    global horizontal
-    global isblur
-    global isgray
-
-    
+    global resized_image
+    global backup_img
+    img = img.filter(ImageFilter.BoxBlur(blur_button.get()))
+    brightened = ImageEnhance.Brightness(img)
+    img = brightened.enhance(settings['brightness'])
+    width, height = img.size
+    width = int(width*300/height)
+    height = 300
     canvas.grid_forget()
-    canvas= Canvas(root, width= 300, height= 300)
+    canvas= Canvas(root, width= width, height= height)
     canvas.grid(row=5, column=0, columnspan=2)
+    resized_image= img.resize((width,height), Image.NEAREST)
+    new_img = ImageTk.PhotoImage(resized_image)
+    canvas.create_image(0,0, anchor=NW, image=new_img)
+    settings.update({'blur':blur_button.get()})
+    img = backup_img
     
-    if isgray == 0 and isblur == 0:
-        img= cv.imread(file)
-        rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        M = np.ones(img.shape, dtype='uint8') * abs(horizontal.get())
-        if horizontal.get() > 0:
-            added = cv.add(rgb, M)      
-        elif horizontal.get() < 0:
-            added = cv.subtract(rgb, M)  
-        elif horizontal.get() == 0:
-            added = rgb
-        added_pil = Image.fromarray(added)
+    if settings['gray']==True:
+        img = ImageOps.grayscale(img)
+def brightness(e):
+    global blur_button
+    global settings
+    global img
+    global canvas
+    global new_img
+    global resized_image
+    global backup_img
+    global horizontal
+    if horizontal.get()>0:
+        brightness_level = 1 + horizontal.get()/40
+    if horizontal.get()<0:
+        brightness_level = 1 + horizontal.get()/150
+    if horizontal.get()==0:
+        brightness_level = 1
         
-        
-        resized_image= added_pil.resize((300,300), Image.LANCZOS)
-        new_img = ImageTk.PhotoImage(resized_image)
-        canvas.create_image(0,0, anchor=NW, image=new_img)    
-        
-    elif isgray == 1 and isblur==0:
-        img = cv.imread(file)
-        gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-        M = np.ones(gray.shape, dtype='uint8') * abs(horizontal.get())
-        if horizontal.get() > 0:
-            added = cv.add(gray, M)      
-        elif horizontal.get() < 0:
-            added = cv.subtract(gray, M)  
-        elif horizontal.get() == 0:
-            added = gray
-        added_pil = Image.fromarray(added)
-        
-        
-        resized_image= added_pil.resize((300,300), Image.LANCZOS)
-        new_img = ImageTk.PhotoImage(resized_image)
-        canvas.create_image(0,0, anchor=NW, image=new_img) 
-    elif isgray==0 and isblur==1:
-        img = cv.imread(file)
-        rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-        M = np.ones(blur.shape, dtype='uint8') * abs(horizontal.get())
-        if horizontal.get() > 0:
-            added = cv.add(blur, M)      
-        elif horizontal.get() < 0:
-            added = cv.subtract(blur, M)  
-        elif horizontal.get() == 0:
-            added = blur
-        added_pil = Image.fromarray(added)
-        
-        
-        resized_image= added_pil.resize((300,300), Image.LANCZOS)
-        new_img = ImageTk.PhotoImage(resized_image)
-        canvas.create_image(0,0, anchor=NW, image=new_img) 
+    settings.update({'brightness':brightness_level})
+    img = img.filter(ImageFilter.BoxBlur(settings['blur']))
+    brightened = ImageEnhance.Brightness(img)
+    img = brightened.enhance(settings['brightness'])
+    width, height = img.size
+    width = int(width*300/height)
+    height = 300
+    canvas.grid_forget()
+    canvas= Canvas(root, width= width, height= height)
+    canvas.grid(row=5, column=0, columnspan=2)
+    resized_image= img.resize((width,height), Image.NEAREST)
+    new_img = ImageTk.PhotoImage(resized_image)
+    canvas.create_image(0,0, anchor=NW, image=new_img)
     
-    elif isgray==1 and isblur==1:
-        img = cv.imread(file)
-        rgb = cv.cvtColor(img, cv.COLOR_BGR2RGB)
-        blur = cv.GaussianBlur(rgb, (7,7), cv.BORDER_DEFAULT)
-        gray = cv.cvtColor(blur, cv.COLOR_BGR2GRAY)
-        M = np.ones(gray.shape, dtype='uint8') * abs(horizontal.get())
-        if horizontal.get() > 0:
-            added = cv.add(gray, M)      
-        elif horizontal.get() < 0:
-            added = cv.subtract(gray, M)  
-        elif horizontal.get() == 0:
-            added = gray
-        added_pil = Image.fromarray(added)
+    img = backup_img
+    
+    if settings['gray']==True:
+        img = ImageOps.grayscale(img)
+def normal():
+    global blur_button
+    global gray_button
+    global settings
+    global img
+    global canvas
+    global new_img
+    global resized_image
+    global backup_img
+    img= backup_img
+    width, height = img.size
+    width = int(width*300/height)
+    height = 300
+    canvas= Canvas(root, width= int(width), height= int(height))
+    canvas.grid(row=5, column=0, columnspan=2)
+            
+    resized_image= img.resize((int(width),int(height)), Image.NEAREST)
+    new_img = ImageTk.PhotoImage(resized_image)
+    canvas.create_image(0,0, anchor=NW, image=new_img)
+    settings.update({'gray':False})
+    settings.update({'brightness':1})
+    settings.update({'blur':0})
+    settings.update({'contours':0})
+    gray_button.configure(bg='blue')
+    blur_button = Scale(root, label='Blur',from_=0, to=10, length=160,bg='blue',fg='white', orient=HORIZONTAL, command=blur)
+    blur_button.grid(row=4, column=0,pady=5)
+    horizontal = Scale(root, label='Brightness',from_=-100, to=100, length=200,bg='blue',fg='white', orient=HORIZONTAL, command=brightness)
+    horizontal.grid(row=6, column=0, columnspan=2)  
+def export():
+        global img
+        filename = filedialog.asksaveasfilename(title = "Create Image")
         
+        if filename:
+            if os.path.exists(filename):
+                print("Name already exists!")
+            else:
+                
+                
+                img.save(filename+'.png')
+                print(f"Saved image")
+        else:
+            print("Cancel")
+def edges():
+    global img
+    global canvas2
+    global resized_image2
+    global new_img2
+    global inverted
+    global invert_button
+    inverted = False
+    open_cv_image = np.array(img)
+    
+    open_cv_image = open_cv_image[:, ::-1].copy()
+
+    width, height = img.size
+    width = int(width*300/height)
+    height = 300
+    
+    new_window = Toplevel()
+    new_window.title("Contours")
+    new_window.geometry("600x600")
+    def reveal_contours(e):
+        global img
+        global canvas2
+        global resized_image2
+        global new_img2
+        global inverted
+        global invert_button
+        global open_cv_image
+        global pil_img
+        invert_button.configure(state=NORMAL)
+        export_contour.configure(state=NORMAL)
+        open_cv_image = np.array(img)
+    
+        open_cv_image = open_cv_image[:, ::-1].copy()
+        open_cv_image = cv.Canny(open_cv_image, int(contour_slider.get()/1.5),int((contour_slider.get()+30)/1.5))
         
-        resized_image= added_pil.resize((300,300), Image.LANCZOS)
-        new_img = ImageTk.PhotoImage(resized_image)
-        canvas.create_image(0,0, anchor=NW, image=new_img) 
+        width, height = img.size
+        width = int(width*300/height)
+        height = 300
+        
+        if inverted == True:
+            ret, thresh = cv.threshold(open_cv_image, 125, 255, cv.THRESH_BINARY_INV)
+            pil_img = Image.fromarray(thresh)
+        else:
+            pil_img = Image.fromarray(open_cv_image) 
+        pil_img = ImageOps.mirror(pil_img)
+        canvas2.grid_forget()
+        
+        canvas2= Canvas(new_window, width= width, height= height)
+        canvas2.grid(row=0, column=0, padx=200)
+        resized_image2= pil_img.resize((width,height), Image.NEAREST)
+        new_img2 = ImageTk.PhotoImage(resized_image2)
+        canvas2.create_image(0,0, anchor=NW, image=new_img2)
+    def invert():
+        global pil_img
+        global img
+        global canvas2
+        global resized_image2
+        global new_img2
+        global inverted
+        global open_cv_image
+       
+        
+        width, height = img.size
+        width = int(width*300/height)
+        height = 300
+
+        
+        ret, thresh = cv.threshold(open_cv_image, 125, 255, cv.THRESH_BINARY_INV)
+        open_cv_image = thresh
+        pil_img = Image.fromarray(thresh)
+        
+             
+
+        pil_img = ImageOps.mirror(pil_img)
+        
+        canvas2.grid_forget()
+        
+        canvas2= Canvas(new_window, width= width, height= height)
+        canvas2.grid(row=0, column=0, padx=200)
+        resized_image2= pil_img.resize((width,height), Image.NEAREST)
+        new_img2 = ImageTk.PhotoImage(resized_image2)
+        canvas2.create_image(0,0, anchor=NW, image=new_img2)
+        inverted = not inverted
+    canvas2= Canvas(new_window, width= width, height= height)
+    canvas2.grid(row=0, column=0, padx=200)
+    resized_image2= img.resize((width,height), Image.NEAREST)
+    new_img2 = ImageTk.PhotoImage(resized_image)
+    canvas2.create_image(0,0, anchor=NW, image=new_img)
+    contour_slider = Scale(new_window, label='Contours',from_=0, to=201, length=201,bg='blue',fg='white', orient=HORIZONTAL,command=reveal_contours)
+    contour_slider.grid(row=1, column=0)
+    invert_button = Button(new_window, text='Invert Color', bg='blue', fg='white', command=invert,state = DISABLED)
+    invert_button.grid(row=2, column=0,pady=10)
+    def export_contour():
+        global pil_img
+        filename = filedialog.asksaveasfilename(title = "Create Image")
+        
+        if filename:
+            if os.path.exists(filename):
+                print("Name already exists!")
+            else:
+                
+                
+                pil_img.save(filename+'.png')
+                print(f"Saved image")
+        else:
+            print("Cancel")
+    export_contour = Button(new_window, text='Export as PNG', bg='blue', fg='white', command=export_contour,state=DISABLED)
+    export_contour.grid(row=3, column=0)
 root.mainloop()
